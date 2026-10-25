@@ -89,8 +89,8 @@ type Config struct {
 
 	Mod Modifiers // what Mod in a binding stands for
 
-	// RepeatDelay (milliseconds) and RepeatRate (per second) time the
-	// repeating of -repeat bindings.
+	// RepeatDelay (milliseconds) and RepeatRate (per second) time key
+	// repeat: of every keyboard, and of -repeat bindings.
 	RepeatDelay int
 	RepeatRate  int
 
@@ -106,6 +106,10 @@ type Config struct {
 
 	// Scratchpads are the windows the scratchpad command shows and hides.
 	Scratchpads []Scratchpad
+
+	// Inputs set libinput options on input devices. Every matching one
+	// applies, in order.
+	Inputs []Input
 }
 
 // Scratchpad is a named window kept out of sight until it is called up: the

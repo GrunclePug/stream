@@ -51,6 +51,19 @@ const header = `# stream configuration
 # current tags and hides again: the first window with the app-id, started with
 # the command when there is none. The command has to give its window that
 # app-id. Defining any scratchpad here replaces the default ones.
+#
+#   input <type|name-glob> <option> <value>...
+#
+# Input lines set libinput options on the devices they match: by type
+# (keyboard, pointer, touchpad, touch or tablet; pointer leaves touchpads out)
+# or by a glob on the device name. Options: tap, drag, natural-scroll, dwt
+# (disable while typing), left-handed and middle-emulation take on or off;
+# accel-profile takes flat or adaptive; accel-speed a number from -1 to 1.
+# Every matching line applies, in order; options left out keep the device's
+# default. For example:
+#
+#   input touchpad tap on natural-scroll on dwt on
+#   input "Logitech*" accel-profile flat
 `
 
 // Generate writes cfg as a config file, with comments. Parsing the result
@@ -70,7 +83,7 @@ func Generate(cfg Config) []byte {
 	setting(&b, "mfact", strconv.FormatFloat(cfg.MFact, 'f', -1, 64))
 	setting(&b, "gap", strconv.Itoa(int(cfg.Gap)))
 
-	section(&b, "Keyboard: what Mod stands for, and how -repeat bindings repeat")
+	section(&b, "Keyboard: what Mod stands for, and how held keys repeat")
 	setting(&b, "mod", strings.ToLower(modifierName(cfg.Mod)))
 	setting(&b, "repeat-delay", strconv.Itoa(cfg.RepeatDelay))
 	setting(&b, "repeat-rate", strconv.Itoa(cfg.RepeatRate))
@@ -86,6 +99,13 @@ func Generate(cfg Config) []byte {
 		section(&b, "Rules")
 		for _, r := range cfg.Rules {
 			b.WriteString(formatRule(r) + "\n")
+		}
+	}
+
+	if len(cfg.Inputs) > 0 {
+		section(&b, "Input devices")
+		for _, in := range cfg.Inputs {
+			b.WriteString(formatInput(in) + "\n")
 		}
 	}
 

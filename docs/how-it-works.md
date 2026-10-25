@@ -47,6 +47,6 @@ Windows are matched by an identifier river gives each one, and monitors by their
 ## What stream leaves to other programs
 
 * **The bar, wallpaper, launcher and notifications**: separate programs, started from the river init.
-* **Keyboard layouts and input devices**: not configured by stream.
+* **Keyboard layouts**: not configured by stream. Input devices are: `swm` sets key repeat and libinput options such as tap-to-click (see [Configuration](configuration.md#input-devices)).
 * **Lock screens**: river's session lock. While it's on, only bindings marked `-locked` work.
 * **Window decorations**: stream asks programs to leave out their title bars and draws only borders.

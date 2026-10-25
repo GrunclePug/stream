@@ -80,6 +80,7 @@ type parser struct {
 	modes    []Mode
 	bindings bool
 	rules    []Rule
+	inputs   []Input
 
 	scratchpads []Scratchpad
 	scratchAt   []*Error // where each of scratchpads is defined
@@ -167,6 +168,10 @@ func (p *parser) file(path, from string, fromLine, depth int) {
 		case "rule":
 			if err := p.rule(rest); err != nil {
 				p.errorf(path, n, "rule: %v", err)
+			}
+		case "input":
+			if err := p.input(rest); err != nil {
+				p.errorf(path, n, "input: %v", err)
 			}
 		case "mode":
 			if m := p.modeBlock(path, n, rest); m != "" {
@@ -444,6 +449,9 @@ func (p *parser) finish() {
 	}
 	if p.scratchpads != nil {
 		p.cfg.Scratchpads = p.scratchpads
+	}
+	if p.inputs != nil {
+		p.cfg.Inputs = p.inputs
 	}
 	if !p.bindings {
 		// The default bindings stay, so they must still find their

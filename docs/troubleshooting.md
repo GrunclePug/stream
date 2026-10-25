@@ -17,6 +17,16 @@ while :; do
 done &
 ```
 
+## Tapping or natural scrolling doesn't work
+
+libinput leaves both off by default, and river 0.5 doesn't configure input devices itself: unlike X, it reads no `xorg.conf.d` files, and the `riverctl input` commands of older river versions are gone. Turn them on in the stream config, then reload:
+
+```
+input touchpad tap on natural-scroll on dwt on
+```
+
+[Configuration](configuration.md#input-devices) lists every option. If a device still ignores a line, run `swm -log-level debug`: it logs each device's name and type, and warns about options a device refuses.
+
 ## The bar or wallpaper doesn't appear
 
 river closes bars, wallpapers and other layer-shell surfaces that start before a window manager is connected, and most programs don't try again. Start them after `streamctl wait` in the river init:

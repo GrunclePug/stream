@@ -6,7 +6,7 @@
 
 One directive per line. Lines starting with `#` are comments. A `#` anywhere else is part of the line, as in a colour, so comments can't follow a directive on the same line.
 
-Any setting you leave out keeps its default. Bindings, rules and scratchpads work differently: once the file has any `bind` line, its bindings replace all the default bindings, and the same goes for `rule` and `scratchpad` lines. That way the file always shows every binding you have.
+Any setting you leave out keeps its default. Bindings, rules, scratchpads and input lines work differently: once the file has any `bind` line, its bindings replace all the default bindings, and the same goes for `rule`, `scratchpad` and `input` lines. That way the file always shows every binding you have.
 
 ## Settings
 
@@ -20,7 +20,7 @@ Any setting you leave out keeps its default. Bindings, rules and scratchpads wor
 | `mfact` | `0.55` | Share of the width the master area takes, `0.05` to `0.95`. |
 | `gap` | `5` | Gap in pixels between windows and at the screen edges. |
 | `mod` | `alt` | The modifier `Mod` stands for in bindings: `alt`, `super`, `ctrl`, `shift`, `mod3` or `mod5`. |
-| `repeat-delay` | `600` | Milliseconds a `-repeat` binding is held before it repeats. |
+| `repeat-delay` | `600` | Milliseconds a key is held before it repeats, in programs and for `-repeat` bindings. |
 | `repeat-rate` | `25` | Repeats per second after that. |
 
 ## Includes
@@ -111,6 +111,47 @@ A scratchpad is a floating window that `scratchpad <name>` shows over whatever y
 scratchpad term foot-scratch foot --app-id foot-scratch
 ```
 
+## Input devices
+
+```
+input <type|name-glob> <option> <value>...
+```
+
+An input line sets libinput options on the input devices it matches, such as tap-to-click on a touchpad. Without one, devices keep libinput's defaults, which leave tapping and natural scrolling off. The first word matches devices by type, or, if it isn't a type, by name, as a pattern like those of rules:
+
+| Type | Devices |
+|------|---------|
+| `keyboard` | Keyboards. |
+| `pointer` | Mice, trackballs and trackpoints: pointers other than touchpads. |
+| `touchpad` | Touchpads: pointers that can tap. |
+| `touch` | Touchscreens. |
+| `tablet` | Drawing tablets. |
+
+Options:
+
+| Option | Values | Effect |
+|--------|--------|--------|
+| `tap` | `on`, `off` | Tap to click: one finger for left, two for right, three for middle. |
+| `drag` | `on`, `off` | Tap and then hold to drag. |
+| `natural-scroll` | `on`, `off` | Scroll the content, as on a phone, instead of the view. |
+| `dwt` | `on`, `off` | Disable the touchpad while typing. |
+| `left-handed` | `on`, `off` | Swap the left and right buttons. |
+| `middle-emulation` | `on`, `off` | Pressing left and right together is a middle click. |
+| `accel-profile` | `flat`, `adaptive` | Pointer acceleration: none, or faster movement goes further. |
+| `accel-speed` | `-1` to `1` | Pointer speed; `0` is the device's normal speed. |
+
+Every matching line applies, in order, so a later line can change what an earlier one set. An option no line sets keeps the device's default, and an option a device doesn't have is skipped:
+
+```
+input touchpad tap on natural-scroll on dwt on
+input pointer accel-profile flat
+input "Logitech G502*" accel-speed -0.3
+```
+
+Device names are what the hardware calls itself, such as `SynPS/2 Synaptics TouchPad`; `swm -log-level debug` logs each device's name and type as it appears. river can only change libinput options when it runs on the hardware, not nested in another session.
+
+Key repeat is set for every keyboard by the `repeat-delay` and `repeat-rate` settings, not by input lines.
+
 ## Commands
 
 Bindings run commands, and so does `streamctl`. Numbers with a sign change the current value (`mfact +0.05`); numbers without one set it (`mfact 0.55`).
@@ -146,7 +187,7 @@ Bindings run commands, and so does `streamctl`. Numbers with a sign change the c
 
 ## Reloading
 
-The `reload` command (Mod+Shift+r) reads the file again and applies its settings, bindings, rules and scratchpads. What you've changed by hand stays: each tag's layout, master size and master count, and each monitor's gap. `reset` and `gap reset` go back to the configured values. A scratchpad that's no longer defined becomes an ordinary window.
+The `reload` command (Mod+Shift+r) reads the file again and applies its settings, bindings, rules, scratchpads and input lines. An option whose input line is gone goes back to the device's default. What you've changed by hand stays: each tag's layout, master size and master count, and each monitor's gap. `reset` and `gap reset` go back to the configured values. A scratchpad that's no longer defined becomes an ordinary window.
 
 ## Errors and warnings
 

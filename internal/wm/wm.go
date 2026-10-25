@@ -35,6 +35,8 @@ const stopTimeout = 2 * time.Second
 type WM struct {
 	proto.WlRegistryStub
 	proto.RiverWindowManagerV1Stub
+	proto.RiverInputManagerV1Stub
+	proto.RiverLibinputConfigV1Stub
 
 	log *slog.Logger
 
@@ -62,12 +64,22 @@ type WM struct {
 	xkb        proto.RiverXkbBindingsV1
 	layerShell proto.RiverLayerShellV1
 
+	// The input globals, unset when river doesn't offer them. libinput is
+	// bound after the input manager, whatever order river lists them in, so
+	// river announces each device to the input manager first and every
+	// libinput device finds its own.
+	inputManager   proto.RiverInputManagerV1
+	libinput       proto.RiverLibinputConfigV1
+	libinputGlobal uint32 // its registry name, 0 when not offered
+
 	// Advertised versions of the globals, so a too old river gets a clear
 	// error instead of a protocol error later.
 	managerOffered    uint32
 	xkbOffered        uint32
 	layerShellOffered uint32
 	wlOutputs         map[uint32]uint32 // wl_output global name to version
+
+	inputs []*inputDevice
 
 	windows []*Window // every window, in the order river created them
 	outputs []*Output
@@ -134,6 +146,7 @@ func Run(ctx context.Context, log *slog.Logger, cfgPath string) (err error) {
 		return err
 	}
 	wm.manager.SetUserData(wm)
+	wm.bindLibinput()
 	wm.cfgErrors = errorLines(cfgErr)
 	log.Info("connected to river")
 	if len(wm.persist.saved.Windows) > 0 {
@@ -189,6 +202,21 @@ func (wm *WM) checkGlobals() error {
 	return nil
 }
 
+// bindLibinput binds river's libinput config global, if it offers one along
+// with the input manager. Without them swm leaves input devices alone.
+func (wm *WM) bindLibinput() {
+	if !wm.inputManager.IsSet() {
+		wm.log.Info("river offers no input manager: input lines and key repeat don't apply")
+		return
+	}
+	if wm.libinputGlobal == 0 {
+		wm.log.Info("river offers no libinput config: input lines don't apply")
+		return
+	}
+	wm.libinput = proto.As[proto.RiverLibinputConfigV1](wm.registry.Bind(wm.libinputGlobal, proto.RiverLibinputConfigV1Name, libinputConfigVersion))
+	wm.libinput.SetUserData(wm)
+}
+
 // stop asks river to stop sending events and waits for the confirmation, so
 // river doesn't treat the exit as a crash.
 func (wm *WM) stop(conn *wlcl.Connection) error {
@@ -231,6 +259,15 @@ func (wm *WM) HandleWlRegistryGlobal(ctx context.Context, name uint32, iface str
 		wm.layerShellOffered = version
 		if version >= layerShellVersion {
 			wm.layerShell = proto.As[proto.RiverLayerShellV1](wm.registry.Bind(name, iface, layerShellVersion))
+		}
+	case proto.RiverInputManagerV1Name:
+		if version >= inputManagerVersion {
+			wm.inputManager = proto.As[proto.RiverInputManagerV1](wm.registry.Bind(name, iface, inputManagerVersion))
+			wm.inputManager.SetUserData(wm)
+		}
+	case proto.RiverLibinputConfigV1Name:
+		if version >= libinputConfigVersion {
+			wm.libinputGlobal = name
 		}
 	case proto.WlOutputName:
 		wm.wlOutputs[name] = version

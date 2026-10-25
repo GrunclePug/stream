@@ -16,6 +16,7 @@ stream is a window manager for the [river](https://codeberg.org/river/river) Way
 * **Mouse**: focus follows the pointer. Mod+drag moves and resizes floating windows, moves tiled ones around the layout, and drags the dividers between them.
 * **Floating where it fits**: dialogs and fixed-size windows float, and fullscreen requests are honoured. Windows show only a border.
 * **Scratchpads and rules**: windows one key shows and hides, and rules that float, tag or place windows by app-id and title.
+* **Input devices**: tap-to-click, natural scrolling and other libinput options by device type or name, and key repeat for every keyboard.
 * **One plain config file**: dwm's keys are built in, and `streamctl gen-config` writes them out to edit. Binding modes, keys that run several commands, and mistakes reported by line and never applied.
 * **Scriptable**: `streamctl` runs any command in the running `swm`, and `streamctl watch` streams its state as JSON for waybar or any other bar.
 * **Restart-safe**: river keeps every window when `swm` exits, and `swm` puts each one back on its monitor, tags and place.

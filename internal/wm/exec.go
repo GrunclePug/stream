@@ -370,6 +370,7 @@ func (wm *WM) reload() error {
 	if !wm.hasMode(wm.mode) {
 		wm.mode = config.NormalMode
 	}
+	wm.applyInput()
 	wm.log.Info("config reloaded", "path", wm.cfgPath)
 	return nil
 }
