@@ -1,0 +1,13 @@
+/* h2o, for GTK 3 and 4 and waybar: @import url("../theme/colors.css"); from
+   ~/.config/gtk-3.0/gtk.css, gtk-4.0/gtk.css or waybar's style.css. */
+@define-color base          #0b1826;
+@define-color shade         #132536;
+@define-color line          #1f3a52;
+@define-color text          #e6f1fa;
+@define-color dim           #8eabc4;
+@define-color accent        #3fa9f5;
+@define-color accent_fg     #0b1826;
+@define-color accent_bright #7cc4fa;
+@define-color accent2       #8fe3f0;
+@define-color urgent        #f2707a;
+@define-color success       #6fd6a8;

@@ -1,0 +1,13 @@
+# h2o: mako's colours. Add include=~/.config/mako/theme to mako's config.
+border-color=#3fa9f5
+background-color=#0b1826
+text-color=#dde9f3
+progress-color=over #3fa9f555
+
+[urgency=low]
+border-color=#1f3a52aa
+text-color=#8eabc4
+
+[urgency=critical]
+border-color=#f2707a
+background-color=#2a1418dd
