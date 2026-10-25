@@ -41,9 +41,7 @@ Bind clicks to `streamctl` commands, such as `streamctl view 3`. Commands act on
 
 ## waybar
 
-This setup needs waybar and [jq](https://jqlang.org).
-
-waybar runs one bar per monitor and tells each bar's scripts which monitor it's on in `WAYBAR_OUTPUT_NAME`. jq picks that monitor out of the state, and turns it into the text and class each module shows. Add custom modules to waybar's config:
+`streamctl waybar <module>` prints what one waybar custom module shows, as the JSON waybar reads, one line per change. waybar runs one bar per monitor and tells each bar's modules which monitor it's on in `WAYBAR_OUTPUT_NAME`; `streamctl waybar` reads it, so each bar shows its own monitor. Add custom modules to waybar's config:
 
 ```jsonc
 "modules-left": [
@@ -54,7 +52,7 @@ waybar runs one bar per monitor and tells each bar's scripts which monitor it's 
 "modules-right": ["custom/config", "clock"],
 
 "custom/tag-1": {
-  "exec": "streamctl watch | jq --unbuffered -c '.outputs[] | select(.name == env.WAYBAR_OUTPUT_NAME) | {text: \"1\", class: (if (.tags | contains([1])) then \"focused\" elif (.occupied | contains([1])) then \"occupied\" else \"empty\" end)}'",
+  "exec": "streamctl waybar tag 1",
   "return-type": "json",
   "on-click": "streamctl view 1",
   "on-click-right": "streamctl toggle-view 1",
@@ -62,7 +60,7 @@ waybar runs one bar per monitor and tells each bar's scripts which monitor it's 
 },
 
 "custom/layout": {
-  "exec": "streamctl watch | jq --unbuffered -c '.outputs[] | select(.name == env.WAYBAR_OUTPUT_NAME) | {text: (if .nmaster == 1 then .layout else \"\\(.layout) \\(.nmaster)\" end)}'",
+  "exec": "streamctl waybar layout",
   "return-type": "json",
   "on-click": "streamctl layout prev",
   "on-click-right": "streamctl layout monocle",
@@ -70,13 +68,13 @@ waybar runs one bar per monitor and tells each bar's scripts which monitor it's 
 },
 
 "custom/mode": {
-  "exec": "streamctl watch | jq --unbuffered -c '{text: (if .mode == \"normal\" then \"\" else .mode end)}'",
+  "exec": "streamctl waybar mode",
   "return-type": "json",
   "tooltip": false
 },
 
 "custom/title": {
-  "exec": "streamctl watch | jq --unbuffered -c '.outputs[] | select(.name == env.WAYBAR_OUTPUT_NAME) | {text: .title}'",
+  "exec": "streamctl waybar title",
   "return-type": "json",
   "escape": true,
   "max-length": 80,
@@ -85,36 +83,33 @@ waybar runs one bar per monitor and tells each bar's scripts which monitor it's 
 },
 
 "custom/config": {
-  "exec": "streamctl watch | jq --unbuffered -c '{text: (if (.config_errors | length) > 0 then \"config error\" elif (.config_warnings | length) > 0 then \"config warning\" else \"\" end), tooltip: (.config_errors + .config_warnings | join(\"\\n\"))}'",
+  "exec": "streamctl waybar config",
   "return-type": "json"
 }
 ```
 
-Tags 2 to 9 are copies of tag 1 with the number changed in all four places. What each module shows:
+Tags 2 to 9 are copies of tag 1 with the number changed in all four places. The modules:
 
-* **Tags**: each tag's class is `focused`, `occupied` or `empty`, for the stylesheet to colour.
-* **Layout**: the layout, with the master count when it isn't 1.
-* **Mode**: the mode, hidden in the normal mode.
-* **Title**: the focused window's title.
-* **Config**: a notice when the config has errors or warnings, with the details in its tooltip.
+| Module | Shows | Classes |
+|--------|-------|---------|
+| `tag <n>` | The tag's number. | `tag`, plus `focused`, `occupied` or `empty` |
+| `layout` | The layout, with the master count when it isn't 1. | |
+| `mode` | The binding mode, hidden in the normal mode. | |
+| `title` | The focused window's title. Keep `"escape": true`, since titles can hold `<` and `&`. | |
+| `config` | A notice when the config has errors or warnings, with the details in its tooltip. | `error` or `warning` |
 
-waybar hides a module while its text is empty.
+waybar hides a module while its text is empty. A module writes a line only when what it shows changes, not on every change of state.
+
+Each module is a single process. It ends with waybar, and with its bar when waybar reloads, so nothing is left running behind it.
 
 The stylesheet gives the tags their look. With the colours from [h2o](theming.md):
 
 ```css
-#custom-tag-1, #custom-tag-2, #custom-tag-3, #custom-tag-4, #custom-tag-5,
-#custom-tag-6, #custom-tag-7, #custom-tag-8, #custom-tag-9 { padding: 0 6px; color: #46637e; }
+.tag          { padding: 0 6px; color: #46637e; }
+.tag.occupied { color: #8eabc4; }
+.tag.focused  { color: #0b1826; background: #3fa9f5; }
 
-#custom-tag-1.occupied, #custom-tag-2.occupied, #custom-tag-3.occupied,
-#custom-tag-4.occupied, #custom-tag-5.occupied, #custom-tag-6.occupied,
-#custom-tag-7.occupied, #custom-tag-8.occupied, #custom-tag-9.occupied { color: #8eabc4; }
-
-#custom-tag-1.focused, #custom-tag-2.focused, #custom-tag-3.focused,
-#custom-tag-4.focused, #custom-tag-5.focused, #custom-tag-6.focused,
-#custom-tag-7.focused, #custom-tag-8.focused, #custom-tag-9.focused { color: #0b1826; background: #3fa9f5; }
-
-#custom-mode { padding: 0 8px; color: #0b1826; background: #8fe3f0; }
+#custom-mode   { padding: 0 8px; color: #0b1826; background: #8fe3f0; }
 #custom-config { padding: 0 8px; color: #0b1826; background: #f2707a; }
 ```
 
@@ -122,4 +117,4 @@ Start waybar after `streamctl wait` in the river init, as in [Getting started](g
 
 ## Other bars
 
-Any bar that can run a command and read its output works the same way: run `streamctl watch`, pick out the fields you need, and run `streamctl` commands on clicks. Pick out one monitor by its `name`, or show the focused one with `select(.focused)`.
+Any bar that can run a command and read its output works the same way: run `streamctl watch`, pick out the fields you need (with jq, for example), and run `streamctl` commands on clicks. Pick out one monitor by its `name`, or show the focused one with `select(.focused)`.

@@ -18,7 +18,7 @@ stream is a window manager for the [river](https://codeberg.org/river/river) Way
 * **Scratchpads and rules**: windows one key shows and hides, and rules that float, tag or place windows by app-id and title.
 * **Input devices**: tap-to-click, natural scrolling and other libinput options by device type or name, and key repeat for every keyboard.
 * **One plain config file**: dwm's keys are built in, and `streamctl gen-config` writes them out to edit. Binding modes, keys that run several commands, and mistakes reported by line and never applied.
-* **Scriptable**: `streamctl` runs any command in the running `swm`, and `streamctl watch` streams its state as JSON for waybar or any other bar.
+* **Scriptable**: `streamctl` runs any command in the running `swm`, `streamctl waybar` feeds waybar's modules, and `streamctl watch` streams the whole state as JSON for any other bar.
 * **Restart-safe**: river keeps every window when `swm` exits, and `swm` puts each one back on its monitor, tags and place.
 * **h2o**: stream's own look and wallpaper, with the full theme for foot, mako, tmux, dunst, GTK and waybar as an example.
 * **Built for river**: uses river's manage and render sequences, so every change appears in a single frame. Pure Go, no cgo.
@@ -32,7 +32,7 @@ stream is a window manager for the [river](https://codeberg.org/river/river) Way
 * libxkbcommon headers (`xkbcommon-keysyms.h`), at build time only
 * river 0.5.0 or newer
 * swaybg, or another wallpaper program, for the wallpaper (optional)
-* waybar and jq, for the bar setup in [Bars](docs/bars.md) (optional)
+* waybar, for the bar setup in [Bars](docs/bars.md) (optional)
 
 ### Build
 

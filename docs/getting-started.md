@@ -5,7 +5,7 @@
 * river 0.5.0 or newer.
 * Go, Make and the libxkbcommon headers, to build.
 * For the default bindings: [foot](https://codeberg.org/dnkl/foot) as the terminal and [wmenu](https://codeberg.org/adnano/wmenu) as the launcher. You can change both later.
-* Optional: swaybg for the wallpaper, and a bar. The waybar setup in [Bars](bars.md) also needs [jq](https://jqlang.org).
+* Optional: swaybg for the wallpaper, and a bar, such as waybar: see [Bars](bars.md).
 
 ## Install
 

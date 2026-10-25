@@ -30,6 +30,8 @@ follow the pointer. Also:
 
   watch        print swm's state as JSON, one line per change; waits
                for swm when it isn't running
+  waybar       print a waybar module's output, such as waybar tag 3
+               (streamctl waybar -h lists them)
   wait         wait until swm is running, such as before starting a bar
   gen-config   write swm's default config file
   version      print the version
@@ -63,10 +65,14 @@ func run(name string, args []string) error {
 		return nil
 	}
 
+	if name == "waybar" && len(args) == 1 && (args[0] == "-h" || args[0] == "-help" || args[0] == "help") {
+		fmt.Print(waybarUsage)
+		return nil
+	}
 	switch {
 	case (name == "watch" || name == "wait") && len(args) > 0:
 		return usageError{name + " takes no arguments", usage}
-	case name != "watch" && name != "wait" && !slices.Contains(command.Names(), name):
+	case name != "watch" && name != "wait" && name != "waybar" && !slices.Contains(command.Names(), name):
 		return usageError{fmt.Sprintf("unknown command %q", name), usage}
 	}
 
@@ -81,6 +87,8 @@ func run(name string, args []string) error {
 		return ipc.WatchState(ctx, path, os.Stdout, ipc.SessionAlive)
 	case "wait":
 		return ipc.Wait(ctx, path, ipc.SessionAlive)
+	case "waybar":
+		return runWaybar(ctx, path, args, os.Stdout)
 	}
 	warnings, err := ipc.Send(ctx, path, strings.Join(append([]string{name}, args...), " "))
 	for _, w := range warnings {

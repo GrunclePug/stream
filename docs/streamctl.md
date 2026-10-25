@@ -28,6 +28,14 @@ streamctl watch
 
 Prints `swm`'s state as one JSON object per line: once at the start, then after every change. It waits for `swm` when it isn't running, and keeps going across `swm` restarts, until river exits. [Bars](bars.md#the-state) describes the format.
 
+## waybar
+
+```sh
+streamctl waybar <module>
+```
+
+Prints one waybar custom module's output as JSON, one line per change, for the module's `exec` with `"return-type": "json"`. The modules are `tag <n>`, `layout`, `mode`, `title` and `config`; [Bars](bars.md#waybar) has the whole setup. The monitor is the one in `WAYBAR_OUTPUT_NAME`, which waybar sets for each bar, or the focused one. Like `watch`, it waits for `swm` and keeps going across restarts. It ends when the program that started it does.
+
 ## wait
 
 ```sh
