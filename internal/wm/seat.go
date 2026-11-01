@@ -103,7 +103,7 @@ func (s *Seat) forget(w *Window) {
 		s.endOp()
 	}
 	if s.sent == w {
-		s.sent = nil
+		s.sent, s.resend = nil, true
 	}
 	if s.focused == w {
 		s.focused = nil

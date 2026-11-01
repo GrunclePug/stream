@@ -239,3 +239,24 @@ func TestAdoptParked(t *testing.T) {
 		t.Errorf("on another output: tags %#b, want its shown tags %#b", ws[0].tags, uint32(1<<4))
 	}
 }
+
+// When the last visible window on a seat's output closes, forget must mark
+// resend so syncFocus sends ClearFocus instead of leaving river's seat
+// focused on the closed window.
+func TestForgetLastWindowResendsClearFocus(t *testing.T) {
+	wm := &WM{}
+	o := &Output{wm: wm, tagset: [2]uint32{1, 1}}
+	wm.outputs = []*Output{o}
+	w := &Window{wm: wm}
+	o.attach(w)
+	s := &Seat{wm: wm, output: o, focused: w, sent: w}
+
+	o.detach(w)
+	s.forget(w)
+	if s.focused != nil {
+		t.Fatalf("focused = %v, want nil", s.focused)
+	}
+	if !s.resend {
+		t.Fatal("resend = false after forgetting sent window with no fallback; syncFocus would skip ClearFocus")
+	}
+}
