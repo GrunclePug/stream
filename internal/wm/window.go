@@ -29,6 +29,13 @@ type Window struct {
 
 	// width and height are the content dimensions river last reported.
 	width, height int32
+	// resized is set when they change, until a tiled arrange checks that
+	// the window took the size it was given.
+	resized bool
+	// refusedW and refusedH are the size a tiled window last took on its
+	// own and was asked out of. Taking it again keeps it, so a program
+	// that insists isn't asked forever.
+	refusedW, refusedH int32
 
 	output   *Output
 	parkedOn string // the output it waits for, when its output went away
@@ -154,6 +161,7 @@ func (w *Window) propose(width, height int32) {
 	}
 	w.obj.ProposeDimensions(width, height)
 	w.proposedW, w.proposedH, w.proposed = width, height, true
+	w.refusedW, w.refusedH = 0, 0
 }
 
 // box is the window's content geometry as it is on screen.
@@ -200,7 +208,19 @@ func (w *Window) HandleRiverWindowV1DimensionsHint(ctx context.Context, minW, mi
 }
 
 func (w *Window) HandleRiverWindowV1Dimensions(ctx context.Context, width, height int32) {
+	if width != w.width || height != w.height {
+		w.resized = true
+	}
 	w.width, w.height = width, height
+}
+
+// offSize reports whether a tiled window changed to a size other than the
+// one it was last asked to take, as an X11 program that resizes itself
+// does (river lets it), and hasn't already been asked out of that size.
+func (w *Window) offSize() bool {
+	return w.resized && w.proposed &&
+		(w.width != w.proposedW || w.height != w.proposedH) &&
+		(w.width != w.refusedW || w.height != w.refusedH)
 }
 
 // HandleRiverWindowV1DecorationHint asks every window that can do it for

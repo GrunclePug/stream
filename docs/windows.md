@@ -27,7 +27,7 @@ Hold Mod and use the pointer:
 
 A drag acts on the window under the pointer and focuses it first. Dragging a floating window onto another monitor moves it to that monitor.
 
-Programs that draw their own title bar can be moved and resized by it, as usual, while they float. Tiled windows stay where the layout puts them.
+Programs that draw their own title bar can be moved and resized by it, as usual, while they float. Tiled windows stay where the layout puts them, at the size it gives them: a program that resizes itself, as some X11 games do when they start, is put back to its tile once. If it asks for its own size again, it keeps it.
 
 ## Floating windows
 

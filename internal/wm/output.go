@@ -216,7 +216,17 @@ func (o *Output) arrange() {
 		w := tiled[i]
 		w.tiled, w.slot = true, r
 		content := r.Inset(bw)
+		// As dwm refuses a tiled client's own resize, a window that took
+		// another size is asked for its slot again, once.
+		refuse := w.offSize()
+		if refuse {
+			w.proposed = false
+		}
+		w.resized = false
 		w.propose(max(content.W, 1), max(content.H, 1))
+		if refuse {
+			w.refusedW, w.refusedH = w.width, w.height
+		}
 		w.setTiledEdges(allEdges)
 	}
 }
@@ -241,6 +251,9 @@ func (o *Output) render() {
 	}
 
 	for _, w := range tiled {
+		if w.offSize() {
+			o.wm.manager.ManageDirty() // to propose the slot's size again
+		}
 		content := w.slot.Inset(bw)
 		w.node.SetPosition(content.X, content.Y)
 		// A window that won't shrink to its slot is cut off at the slot's
